@@ -1,4 +1,5 @@
 import { test as base, expect, Page } from '@playwright/test';
+
 import * as dotenv from 'dotenv';
 
 dotenv.config();
@@ -18,18 +19,21 @@ const PASSWORD = process.env.INVENTREE_PASSWORD ?? '';
  * login logic lives, so a fix here propagates to every test).
  */
 export async function login(page: Page, baseURL: string): Promise<void> {
-  await page.goto(baseURL + '/web/login');
-
-  const usernameField = page.getByLabel(/username/i);
-  const passwordField = page.getByLabel(/password/i);
-
-  await usernameField.fill(USERNAME);
-  await passwordField.fill(PASSWORD);
-
-  await page.getByRole('button', { name: /log ?in|sign ?in/i }).click();
-
-  // Wait for redirect away from the login page as confirmation of success.
-  await expect(page).not.toHaveURL(/\/web\/login/, { timeout: 15_000 });
+  const loginUrl = `${baseURL}/web/login`;
+  await page.goto(loginUrl);
+  const csrfCookie = (await page.context().cookies(baseURL)).find(cookie => cookie.name === 'csrftoken');
+  const response = await page.request.post(`${baseURL}/api/auth/v1/auth/login`, {
+    data: { username: USERNAME, password: PASSWORD },
+    headers: {
+      Referer: loginUrl,
+      ...(csrfCookie ? { 'X-CSRFToken': csrfCookie.value } : {}),
+    },
+  });
+  if (!response.ok()) {
+    throw new Error(`UI login failed (${response.status()}): ${await response.text()}`);
+  }
+  await page.goto(baseURL + '/web/part');
+  await page.getByRole('tab').getByRole('link', { name: 'Parts', exact: true }).click();
 }
 
 export const test = base.extend<{ authenticatedPage: Page }>({

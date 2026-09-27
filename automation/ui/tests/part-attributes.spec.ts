@@ -12,7 +12,7 @@ import { test, expect } from '../fixtures/login';
  */
 
 async function createPart(page: import('@playwright/test').Page, name: string, extra?: Record<string, boolean>) {
-  await page.goto('/web/part');
+  await page.goto('/web/part/category/index/parts');
   await page.getByRole('button', { name: /add parts?/i }).click();
   await page.getByRole('menuitem', { name: /create part/i }).click();
 
@@ -80,7 +80,7 @@ test.describe('Part Attributes & Revisions — UI', () => {
     await expect(page.getByText(/revision/i)).toBeVisible({ timeout: 15_000 });
 
     // Navigate back to the original part to attempt a second revision "A".
-    await page.goto('/web/part'); // simplified navigation back to listing
+    await page.goto('/web/part/category/index/parts'); // simplified navigation back to listing
     await page.getByText(originalName).first().click();
     await page.getByRole('button', { name: /part actions|actions/i }).click();
     await page.getByRole('menuitem', { name: /duplicate part/i }).click();

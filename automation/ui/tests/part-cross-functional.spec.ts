@@ -22,7 +22,7 @@ test.describe('Cross-functional flow — Part → Parameter → Stock → Catego
     const stockQuantity = '25';
 
     // --- Step 1: Create the part, capturing its category for later verification ---
-    await page.goto('/web/part');
+    await page.goto('/web/part/category/index/parts');
     await page.getByRole('button', { name: /add parts?/i }).click();
     await page.getByRole('menuitem', { name: /create part/i }).click();
 
@@ -64,7 +64,7 @@ test.describe('Cross-functional flow — Part → Parameter → Stock → Catego
     await expect(page.getByText(stockQuantity)).toBeVisible({ timeout: 10_000 });
 
     // --- Step 4: Verify the part shows up correctly in its category's part listing ---
-    await page.goto('/web/part');
+    await page.goto('/web/part/category/index/parts');
     if (categoryName) {
       await page.getByText(categoryName, { exact: false }).first().click();
     }

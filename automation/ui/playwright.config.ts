@@ -7,6 +7,7 @@ export default defineConfig({
   testDir: './tests',
   timeout: 45_000,
   expect: { timeout: 10_000 },
+  workers: 1,
   fullyParallel: false, // shared login state / created data across specs
   retries: process.env.CI ? 1 : 0,
   reporter: [['list'], ['html', { open: 'never' }]],
@@ -19,7 +20,10 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
-      use: { ...devices['Desktop Chrome'] },
+      use: {
+        ...devices['Desktop Chrome'],
+        channel: 'chrome',
+      },
     },
   ],
 });

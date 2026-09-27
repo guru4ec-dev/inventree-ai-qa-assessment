@@ -1,0 +1,39 @@
+{
+  "cookies": [
+    {
+      "name": "csrftoken",
+      "value": "hYPEDQ9oGqBnZYQGpmHCDZ0nYlnQA12g",
+      "domain": "demo.inventree.org",
+      "path": "/",
+      "expires": 1821984051.799,
+      "httpOnly": false,
+      "secure": true,
+      "sameSite": "Lax"
+    },
+    {
+      "name": "sessionid",
+      "value": "04k9a8jdy5ddrs4tsa3ywr46x72jlykv",
+      "domain": "demo.inventree.org",
+      "path": "/",
+      "expires": 1791744051.799,
+      "httpOnly": true,
+      "secure": true,
+      "sameSite": "Lax"
+    }
+  ],
+  "origins": [
+    {
+      "origin": "https://demo.inventree.org",
+      "localStorage": [
+        {
+          "name": "session-settings",
+          "value": "{\"state\":{\"autoupdate\":false,\"host\":\"https://demo.inventree.org/\",\"hostKey\":\"server-current\",\"hostList\":{\"server-current\":{\"host\":\"https://demo.inventree.org/\",\"name\":\"Current Server\"}},\"language\":null,\"userTheme\":{\"primaryColor\":\"indigo\",\"whiteColor\":\"#fff\",\"blackColor\":\"#000\",\"radius\":\"xs\",\"loader\":\"oval\"},\"widgets\":[],\"layouts\":{},\"showSampleDashboard\":true,\"lastUsedPrinting\":{},\"lastUsedPanels\":{},\"navigationOpen\":false,\"allowMobile\":false},\"version\":0}"
+        },
+        {
+          "name": "inventree-table-state",
+          "value": "{\"state\":{\"pageSize\":25,\"tableSorting\":{},\"tableColumnNames\":{},\"hiddenColumns\":{}},\"version\":0}"
+        }
+      ]
+    }
+  ]
+}

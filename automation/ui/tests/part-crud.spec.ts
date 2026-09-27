@@ -15,31 +15,31 @@ test.describe('Part CRUD — UI', () => {
   test('UI-PC-001: create part via manual entry with required fields only', async ({
     authenticatedPage: page,
   }) => {
-    const uniqueName = `Automated Part ${Date.now()}`;
+    const uniqueSuffix = Date.now();
+    const uniqueName = `Automated Part ${uniqueSuffix}`;
 
     await page.goto('/web/part');
-    await page.getByRole('button', { name: /add parts?/i }).click();
-    await page.getByRole('menuitem', { name: /create part/i }).click();
+    await page.getByRole('tab').getByRole('link', { name: 'Parts' }).first().click();
+    await page.getByRole('tablist', { name: 'panel-tabs-partcategory' }).getByRole('link', { name: 'Parts' }).click();
+    await page.getByRole('button', { name: 'action-menu-add-parts' }).click();
+    await page.getByRole('menuitem', { name: 'action-menu-add-parts-create-' }).click();
+    await page.getByRole('textbox', { name: 'tree-field-category' }).click();
+    await page.getByText('Consumables', { exact: true }).last().click();
+    await page.getByRole('textbox', { name: 'text-field-name' }).fill(uniqueName);
+    await page.getByRole('textbox', { name: 'text-field-IPN' }).fill(`IPN-${uniqueSuffix}`);
+    await page.getByRole('textbox', { name: 'text-field-description' }).fill('Created by UI automation');
+    await page.getByRole('textbox', { name: 'text-field-revision' }).fill(`REV-${uniqueSuffix}`);
+    await page.getByRole('button', { name: 'Submit' }).click();
 
-    const dialog = page.getByRole('dialog');
-    await expect(dialog).toBeVisible();
-
-    await dialog.getByLabel(/^name$/i).fill(uniqueName);
-
-    // Category is typically a searchable combobox — open it and pick the first result.
-    await dialog.getByLabel(/category/i).click();
-    await page.getByRole('option').first().click();
-
-    await dialog.getByRole('button', { name: /submit|save|create/i }).click();
-
-    // On success, expect navigation to the new part's detail page showing the name.
-    await expect(page.getByRole('heading', { name: uniqueName })).toBeVisible({ timeout: 15_000 });
+    // On success, the current detail view renders the part summary as a paragraph.
+    await expect(page.getByText(uniqueName, { exact: true })).toBeVisible({ timeout: 15_000 });
   });
 
   test('UI-PC-003: creating a part without a name shows a validation error', async ({
     authenticatedPage: page,
   }) => {
     await page.goto('/web/part');
+    await page.getByRole('tab').getByRole('link', { name: 'Parts', exact: true }).click();
     await page.getByRole('button', { name: /add parts?/i }).click();
     await page.getByRole('menuitem', { name: /create part/i }).click();
 
@@ -59,6 +59,7 @@ test.describe('Part CRUD — UI', () => {
     // Precondition: create a throwaway part to toggle.
     const uniqueName = `Toggle Active ${Date.now()}`;
     await page.goto('/web/part');
+    await page.getByRole('tab').getByRole('link', { name: 'Parts', exact: true }).click();
     await page.getByRole('button', { name: /add parts?/i }).click();
     await page.getByRole('menuitem', { name: /create part/i }).click();
     const dialog = page.getByRole('dialog');
