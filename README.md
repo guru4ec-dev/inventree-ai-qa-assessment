@@ -1,0 +1,146 @@
+# InvenTree Parts Module — Agentic QA Case Study
+
+**Candidate submission for the Quality Architect assessment**
+**Application Under Test:** [InvenTree](https://github.com/inventree/InvenTree) (Parts module only)
+**AI Agent Used:** Claude (claude.ai chat, Sonnet), used interactively for requirements analysis, test case generation, and automation script generation
+**Automation Framework:** Playwright Test (TypeScript) — used for both UI and API automation
+
+---
+
+## 1. Approach Summary
+
+The assessment was worked in three phases, matching the problem statement:
+
+| Phase | What was done | Where |
+|---|---|---|
+| 1 | Ingested InvenTree Parts documentation (creation, views/tabs, parameters, templates/variants, revisions, tracking) via URL fetch, then generated UI manual test cases | `test-cases/ui-manual-tests.md` |
+| 2 | Ingested the Part API schema/behaviour (CRUD, filtering, validation, relational integrity) and generated API manual test cases + a runnable Playwright API automation suite | `test-cases/api-manual-tests.md`, `automation/api/` |
+| 3 | Generated Playwright UI automation scripts from the Phase 1 test cases, including one cross-functional flow | `automation/ui/` |
+
+The agent (Claude) was used conversationally: documentation pages were fetched and summarized, then test cases and code were generated iteratively, reviewed, and corrected where the initial output needed adjustment (see `agents/prompts.md` for the exact prompts and `README` sections below for what was manually fixed).
+
+A separate, earlier deliverable — a risk-based test strategy for a hypothetical insurance claims platform — is included in `case-study/` as supplementary material, per the candidate's assessment package.
+
+---
+
+## 2. Repository Structure
+
+```
+submission/
+├── README.md                          # this file
+├── case-study/
+│   └── insurance-claims-risk-based-test-strategy.md
+├── agents/
+│   ├── prompts.md                     # prompts used to drive the agent
+│   └── system-instructions.md         # agent role/instructions & config notes
+├── test-cases/
+│   ├── ui-manual-tests.md             # Phase 1 deliverable
+│   └── api-manual-tests.md            # Phase 2 deliverable
+├── automation/
+│   ├── ui/                            # Playwright UI automation (Phase 3)
+│   │   ├── package.json
+│   │   ├── playwright.config.ts
+│   │   ├── .env.example
+│   │   └── tests/
+│   │       ├── part-crud.spec.ts
+│   │       ├── part-attributes.spec.ts
+│   │       └── part-cross-functional.spec.ts
+│   └── api/                           # Playwright API automation (Phase 2)
+│       ├── package.json
+│       ├── playwright.config.ts
+│       ├── .env.example
+│       ├── fixtures/
+│       │   └── api-client.ts
+│       └── tests/
+│           ├── part-crud.spec.ts
+│           ├── part-filtering.spec.ts
+│           ├── part-validation.spec.ts
+│           └── part-category.spec.ts
+└── video/
+    └── README.md                      # recording checklist (recording itself not included)
+```
+
+---
+
+## 3. Prerequisites
+
+- **Node.js** 18+ and npm
+- **Docker** and **Docker Compose** (to run InvenTree locally)
+- A running InvenTree instance (see below)
+
+---
+
+## 4. Setting Up InvenTree Locally (Docker)
+
+```bash
+# 1. Clone the InvenTree repository (separate from this submission repo)
+git clone https://github.com/inventree/InvenTree.git
+cd InvenTree/docker
+
+# 2. Copy the example environment file
+cp .env.example .env
+
+# 3. Start the stack
+docker compose run --rm inventree-server invoke update
+docker compose up -d
+
+# 4. Create a superuser (if not auto-created)
+docker compose run --rm inventree-server invoke superuser
+```
+
+By default the server is available at `http://localhost:8000`. Log in with the superuser credentials you created, and create at least one Part Category before running the automation suites (or let the API tests create one — see `automation/api/tests/part-category.spec.ts`).
+
+> **Note:** The InvenTree Docker setup and exact `invoke` commands can change between versions — always cross-check against `https://docs.inventree.org/en/stable/start/docker_install/` for the version you pull.
+
+---
+
+## 5. Running the API Automation Suite
+
+```bash
+cd automation/api
+npm install
+npx playwright install --with-deps chromium   # not strictly needed for API-only, kept for consistency
+cp .env.example .env
+# edit .env: set INVENTREE_BASE_URL, INVENTREE_USERNAME, INVENTREE_PASSWORD
+npm test
+```
+
+This runs against a **live InvenTree instance** — there is no mocking. Tests create their own test data (categories/parts) and clean up after themselves where practical, but running against a throwaway/dev instance is strongly recommended.
+
+---
+
+## 6. Running the UI Automation Suite
+
+```bash
+cd automation/ui
+npm install
+npx playwright install --with-deps
+cp .env.example .env
+# edit .env: set BASE_URL, INVENTREE_USERNAME, INVENTREE_PASSWORD
+npm test
+
+# To watch it run headed:
+npm run test:headed
+```
+
+---
+
+## 7. What Was Generated by the Agent vs. Manually Adjusted
+
+In the interest of transparency (per the assessment's "do not submit hand-written tests and claim they're agent-generated" rule):
+
+- **Generated by the agent:** the full structure of UI and API manual test cases, the Playwright project scaffolding, all `.spec.ts` files, selectors based on InvenTree's known UI structure, and the risk-based case study.
+- **Manually adjusted after generation:**
+  - Selectors in the UI spec files are written against InvenTree's Mantine-based React UI conventions (`data-testid` where InvenTree exposes them, falling back to role/label-based locators elsewhere) — these should be spot-checked against your actual running instance, since exact `data-testid` attributes can shift between InvenTree releases. Where a selector could not be verified against a live instance, it is flagged with a `// VERIFY:` comment.
+  - API base paths and payload field names were cross-checked against InvenTree's DRF-based `/api/part/` and `/api/part/category/` endpoints as documented; field names (`IPN`, `active`, `assembly`, `component`, `purchaseable`, `salable`, `trackable`, `virtual`, `is_template`, `variant_of`, `revision`, `revision_of`, `units`) reflect the current stable API.
+  - Environment/config values (`.env.example`) were added manually since these are deployment-specific, not something an agent should invent.
+
+**You should still run this against your own instance before submitting** — some selectors are marked for verification and may need adjustment for your exact InvenTree version.
+
+---
+
+## 8. Metrics / Coverage Notes
+
+- **UI manual test cases:** covers part creation (manual + import), all documented detail-view tabs, categories/hierarchy, all part attribute flags, units of measure, revisions (including all three documented restrictions: circular reference, unique revision code, template-cannot-have-revisions), and negative/boundary scenarios (duplicate IPN, inactive part restrictions, revision-of-revision prevention).
+- **API manual test cases:** covers CRUD on Parts and Part Categories, filtering/pagination/search, field-level validation, relational integrity (category, default location, supplier linkage), and edge cases (invalid payloads, unauthorized access, conflicts).
+- **Automated coverage:** the Playwright suites automate a representative subset of the manual test cases (core CRUD, key attribute validation, one full cross-functional flow) rather than 100% of the manual cases — this mirrors a real-world risk-based approach (see `case-study/`) where automation investment targets the highest-value/highest-risk flows first, with the remainder documented as manual regression cases.
