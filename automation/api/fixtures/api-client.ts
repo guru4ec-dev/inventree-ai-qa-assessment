@@ -6,29 +6,23 @@ dotenv.config();
 const BASE_URL = process.env.INVENTREE_BASE_URL ?? 'http://localhost:8000';
 const USERNAME = process.env.INVENTREE_USERNAME ?? 'admin';
 const PASSWORD = process.env.INVENTREE_PASSWORD ?? '';
+const API_TOKEN = process.env.INVENTREE_API_TOKEN;
 
 /**
- * InvenTree's DRF API accepts HTTP Basic Auth out of the box, which keeps this
- * fixture simple and version-independent (no need to hit a token-issuing
- * endpoint whose exact path can differ between InvenTree releases).
- *
- * // VERIFY: if your instance has Basic Auth disabled in favour of token-only
- * auth, replace this with a call to your instance's token endpoint
- * (historically `GET /api/user/token/` with Basic Auth to mint a token, then
- * send `Authorization: Token <token>` on subsequent requests) and swap the
- * `httpCredentials` block below for an `extraHTTPHeaders` Authorization header.
+ * A static token can be supplied for CI. Otherwise send Basic Auth explicitly;
+ * this works with InvenTree deployments that do not expose a token endpoint.
  */
 export const test = base.extend<{ apiContext: APIRequestContext }>({
   apiContext: async ({}, use) => {
+    const authorization = API_TOKEN
+      ? `Token ${API_TOKEN}`
+      : `Basic ${Buffer.from(`${USERNAME}:${PASSWORD}`).toString('base64')}`;
     const context = await request.newContext({
       baseURL: BASE_URL,
-      httpCredentials: {
-        username: USERNAME,
-        password: PASSWORD,
-      },
       extraHTTPHeaders: {
         Accept: 'application/json',
         'Content-Type': 'application/json',
+        Authorization: authorization,
       },
     });
     await use(context);

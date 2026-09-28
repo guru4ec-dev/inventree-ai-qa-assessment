@@ -11,11 +11,6 @@ const marker = uniqueSuffix();
 const partNames: string[] = [];
 
 test.describe('Part API — Filtering, Pagination, Search', () => {
-  test.beforeAll(async ({ browser }) => {
-    // fixture-scoped setup happens per-test below via apiContext; this hook
-    // intentionally left structural — see first test which seeds data.
-  });
-
   test('setup: seed known dataset', async ({ apiContext }) => {
     const catRes = await apiContext.post('/api/part/category/', {
       data: { name: `Filter Test Category ${marker}` },

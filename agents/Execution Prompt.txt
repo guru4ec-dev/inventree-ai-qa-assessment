@@ -1,0 +1,24 @@
+1. Generate Manual Test Cases:
+@workspace Refer to agents/prompts.md Phase 1 and docs for InvenTree Parts. 
+Generate comprehensive UI manual test cases and save them directly into test-cases/ui-manual-tests.md.
+
+2. Generate Automated Playwright Scripts
+@workspace Refer to agents/prompts.md Phase 2 and Phase 3. 
+Generate the Playwright TypeScript tests for the Parts API under automation/api/tests/parts-api.spec.ts 
+and UI workflows under automation/ui/tests/parts-e2e.spec.ts. 
+Adhere strictly to .github/copilot-instructions.md for selector stability and schema assertions.
+
+Step 4: Execute & Demonstrate Agentic Self-Correction (Crucial for the Assessment)
+        1. Run the tests from API:
+                cd automation/api
+                npx playwright test --UI
+                npx playwright test tests/parts-e2e.spec.ts -g "UI-PART-001" --headed
+                cd ../api
+                npx playwright test tests/parts-api.spec.ts -g "API-PART-001"
+
+        2. If a locator or assertion fails: The below propmt for fix and re-run test:
+
+                @workspace The test in automation/api/tests/parts-api.spec.ts failed with this error:
+                [Paste terminal failure message / stack trace]
+
+                Analyze the issue, update the test code to fix it, and ensure assertions match the API response.
