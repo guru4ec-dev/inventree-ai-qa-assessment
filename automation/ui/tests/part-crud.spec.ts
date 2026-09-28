@@ -39,9 +39,12 @@ test.describe('Part CRUD — UI', () => {
     authenticatedPage: page,
   }) => {
     await page.goto('/web/part');
-    await page.getByRole('tab').getByRole('link', { name: 'Parts', exact: true }).click();
-    await page.getByRole('button', { name: /add parts?/i }).click();
-    await page.getByRole('menuitem', { name: /create part/i }).click();
+    await page.getByRole('tab').getByRole('link', { name: 'Parts', exact: true }).first().click();
+    await page.getByRole('tablist', { name: 'panel-tabs-partcategory' })
+      .getByRole('link', { name: 'Parts', exact: true })
+      .click();
+    await page.getByRole('button', { name: 'action-menu-add-parts' }).click();
+    await page.getByRole('menuitem', { name: 'action-menu-add-parts-create-' }).click();
 
     const dialog = page.getByRole('dialog');
     await expect(dialog).toBeVisible();
